@@ -32,31 +32,31 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false) }, [pathname])
+
+  const isDark = theme === 'dark'
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 h-[72px] flex items-center justify-between px-6 md:px-12 transition-all duration-500 ${
+      <nav className={`fixed top-0 left-0 right-0 z-50 h-[68px] flex items-center justify-between px-6 md:px-12 transition-all duration-500 ${
         scrolled
-          ? 'bg-[rgba(10,10,10,0.92)] backdrop-blur-xl border-b border-[rgba(201,168,76,0.1)]'
-          : 'bg-transparent'
+          ? isDark
+            ? 'bg-[rgba(10,10,10,0.95)] backdrop-blur-xl border-b border-[rgba(201,168,76,0.1)]'
+            : 'bg-white/95 backdrop-blur-xl border-b border-[rgba(201,168,76,0.15)] shadow-sm'
+          : isDark ? 'bg-transparent' : 'bg-[#FAF7F2]/80'
       }`}>
         {/* Logo */}
-        <Link href="/" className="font-display text-xl tracking-[8px] text-[#C9A84C] uppercase shrink-0">
-          Maison <span className="text-[#F0EAD6]">Noir</span>
+        <Link href="/" className="font-display text-xl tracking-[6px] uppercase shrink-0" style={{ color: '#C9A84C' }}>
+          Maison <span className={isDark ? 'text-[#F0EAD6]' : 'text-[#2A2420]'}>Noir</span>
         </Link>
 
-        {/* Desktop links */}
+        {/* Desktop Nav */}
         <ul className="hidden lg:flex gap-8 list-none">
           {NAV_LINKS.map(({ href, label }) => (
             <li key={href}>
-              <Link
-                href={href}
-                className={`text-[10px] tracking-[3px] uppercase transition-colors duration-300 hover:text-[#C9A84C] ${
-                  pathname.startsWith(href.split('?')[0]) ? 'text-[#C9A84C]' : 'text-[#9A9080]'
-                }`}
-              >
+              <Link href={href} className={`text-[10px] tracking-[2.5px] uppercase transition-colors duration-200 hover:text-[#C9A84C] ${
+                pathname.startsWith(href.split('?')[0]) ? 'text-[#C9A84C]' : isDark ? 'text-[#9A9080]' : 'text-[#6B5E4A]'
+              }`}>
                 {label}
               </Link>
             </li>
@@ -64,63 +64,28 @@ export function Navbar() {
         </ul>
 
         {/* Icons */}
-        <div className="flex items-center gap-1.5">
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            className="w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] border border-transparent hover:border-[rgba(201,168,76,0.3)] rounded-full transition-all duration-300"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        <div className="flex items-center gap-1">
+          <button onClick={toggleTheme} className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${isDark ? 'text-[#9A9080] hover:text-[#C9A84C]' : 'text-[#6B5E4A] hover:text-[#C9A84C]'}`}>
+            {isDark ? <Sun size={15} /> : <Moon size={15} />}
           </button>
-
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] border border-transparent hover:border-[rgba(201,168,76,0.3)] rounded-full transition-all duration-300"
-            aria-label="Search"
-          >
-            <Search size={16} />
+          <button onClick={() => setSearchOpen(true)} className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${isDark ? 'text-[#9A9080] hover:text-[#C9A84C]' : 'text-[#6B5E4A] hover:text-[#C9A84C]'}`}>
+            <Search size={15} />
           </button>
-
-          <Link
-            href="/account/wishlist"
-            className="w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] border border-transparent hover:border-[rgba(201,168,76,0.3)] rounded-full transition-all duration-300"
-            aria-label="Wishlist"
-          >
-            <Heart size={16} />
+          <Link href="/account/wishlist" className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${isDark ? 'text-[#9A9080] hover:text-[#C9A84C]' : 'text-[#6B5E4A] hover:text-[#C9A84C]'}`}>
+            <Heart size={15} />
           </Link>
-
-          <Link
-            href="/account"
-            className="w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] border border-transparent hover:border-[rgba(201,168,76,0.3)] rounded-full transition-all duration-300"
-            aria-label="Account"
-          >
-            <User size={16} />
+          <Link href="/account" className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${isDark ? 'text-[#9A9080] hover:text-[#C9A84C]' : 'text-[#6B5E4A] hover:text-[#C9A84C]'}`}>
+            <User size={15} />
           </Link>
-
-          <button
-            onClick={() => setCartOpen(true)}
-            className="w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] border border-transparent hover:border-[rgba(201,168,76,0.3)] rounded-full transition-all duration-300 relative"
-            aria-label={`Cart (${itemCount} items)`}
-          >
-            <ShoppingBag size={16} />
+          <button onClick={() => setCartOpen(true)} className={`relative w-9 h-9 flex items-center justify-center rounded-full transition-colors ${isDark ? 'text-[#9A9080] hover:text-[#C9A84C]' : 'text-[#6B5E4A] hover:text-[#C9A84C]'}`}>
+            <ShoppingBag size={15} />
             {itemCount > 0 && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-[#C9A84C] text-[#0A0A0A] text-[9px] font-bold rounded-full flex items-center justify-center"
-              >
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#C9A84C] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                 {itemCount > 9 ? '9+' : itemCount}
-              </motion.span>
+              </span>
             )}
           </button>
-
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden w-9 h-9 flex items-center justify-center text-[#9A9080] hover:text-[#C9A84C] transition-colors ml-1"
-            aria-label="Menu"
-          >
+          <button onClick={() => setMobileOpen(!mobileOpen)} className={`lg:hidden w-9 h-9 flex items-center justify-center transition-colors ${isDark ? 'text-[#9A9080]' : 'text-[#6B5E4A]'}`}>
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
@@ -129,38 +94,21 @@ export function Navbar() {
       {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="fixed inset-0 z-40 bg-[#0A0A0A] flex flex-col pt-24 px-8"
-          >
-            <nav>
-              {NAV_LINKS.map(({ href, label }, i) => (
-                <motion.div
-                  key={href}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08 + 0.2 }}
-                >
-                  <Link
-                    href={href}
-                    className="block py-5 font-display text-4xl font-light text-[#F0EAD6] border-b border-[rgba(201,168,76,0.1)] hover:text-[#C9A84C] transition-colors"
-                  >
-                    {label}
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
+          <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className={`fixed inset-0 z-40 flex flex-col pt-24 px-8 ${isDark ? 'bg-[#0A0A0A]' : 'bg-[#FAF7F2]'}`}>
+            {NAV_LINKS.map(({ href, label }, i) => (
+              <motion.div key={href} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 + 0.1 }}>
+                <Link href={href} className={`block py-5 font-display text-4xl font-light border-b hover:text-[#C9A84C] transition-colors ${isDark ? 'border-[rgba(201,168,76,0.1)] text-[#F0EAD6]' : 'border-[rgba(42,36,32,0.08)] text-[#2A2420]'}`}>
+                  {label}
+                </Link>
+              </motion.div>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Cart drawer */}
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
-
-      {/* Search modal */}
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   )

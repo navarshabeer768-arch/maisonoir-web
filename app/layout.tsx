@@ -26,34 +26,19 @@ export const metadata: Metadata = {
   title: { default: 'Maison Noir — Luxury Perfumes', template: '%s | Maison Noir' },
   description: 'A sanctuary for those who understand that the finest fragrances are not merely worn — they are experienced.',
   keywords: ['luxury perfume', 'niche fragrance', 'arabic perfume', 'oud', 'premium cologne'],
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://maisonoir.com',
-    siteName: 'Maison Noir',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630 }],
-  },
-  twitter: { card: 'summary_large_image', site: '@maisonoir' },
+  openGraph: { type: 'website', siteName: 'Maison Noir' },
   robots: { index: true, follow: true },
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' },
-    { media: '(prefers-color-scheme: light)', color: '#FAFAF7' },
-  ],
   width: 'device-width',
   initialScale: 1,
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${cormorant.variable} ${montserrat.variable} font-body antialiased bg-obsidian dark:bg-obsidian`}>
+      <body className={`${cormorant.variable} ${montserrat.variable} font-body antialiased`}>
         <ThemeProvider>
           <QueryProvider>
             <CartProvider>
@@ -63,14 +48,14 @@ export default function RootLayout({
                 position="bottom-center"
                 toastOptions={{
                   style: {
-                    background: '#1E1E1E',
-                    color: '#C9A84C',
+                    background: '#2A2420',
+                    color: '#E8D5A3',
                     border: '1px solid rgba(201,168,76,0.3)',
                     fontFamily: 'var(--font-montserrat)',
                     fontSize: '11px',
                     letterSpacing: '2px',
                     textTransform: 'uppercase',
-                    borderRadius: '0',
+                    borderRadius: '2px',
                   },
                 }}
               />

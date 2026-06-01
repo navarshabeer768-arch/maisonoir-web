@@ -1,49 +1,52 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-type LoginData = z.infer<typeof loginSchema>
 
 interface LoginFormProps { redirectTo: string }
 
 export function LoginForm({ redirectTo }: LoginFormProps) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
-  })
-
-  const onSubmit = async ({ email, password }: LoginData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password) { setError('Please fill in all fields'); return }
+    setError('')
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        toast.error(error.message)
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      if (authError) {
+        if (authError.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link before signing in.')
+          // Resend confirmation
+          await supabase.auth.resend({ type: 'signup', email })
+          toast.success('Confirmation email resent!')
+        } else if (authError.message.includes('Invalid login credentials')) {
+          setError('Incorrect email or password. Please try again.')
+        } else {
+          setError(authError.message)
+        }
         return
       }
       toast.success('Welcome back ✦')
       router.push(redirectTo)
       router.refresh()
+    } catch {
+      setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo}` },
@@ -51,59 +54,41 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="p-3.5 bg-red-50 border border-red-200 text-[11px] text-red-600 leading-relaxed">{error}</div>
+      )}
       <div>
-        <label className="text-[9px] tracking-[2px] uppercase text-[#6B5E4A] block mb-2">Email Address</label>
+        <label className="text-[9px] tracking-[2px] uppercase text-[#6B5E4A] block mb-2 font-medium">Email Address</label>
         <input
-          {...register('email')}
-          type="email"
-          className="input-luxury w-full"
-          placeholder="your@email.com"
-          autoComplete="email"
+          type="email" value={email} onChange={e => setEmail(e.target.value)}
+          className="input-luxury" placeholder="your@email.com" autoComplete="email" required
         />
-        {errors.email && <p className="text-[9px] text-red-400 mt-1">{errors.email.message}</p>}
       </div>
-
       <div>
-        <label className="text-[9px] tracking-[2px] uppercase text-[#6B5E4A] block mb-2">Password</label>
+        <label className="text-[9px] tracking-[2px] uppercase text-[#6B5E4A] block mb-2 font-medium">Password</label>
         <div className="relative">
           <input
-            {...register('password')}
-            type={showPassword ? 'text' : 'password'}
-            className="input-luxury w-full pr-12"
-            placeholder="••••••••"
-            autoComplete="current-password"
+            type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+            className="input-luxury pr-12" placeholder="••••••••" autoComplete="current-password" required
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5A5048] hover:text-[#C9A84C] transition-colors"
-          >
+          <button type="button" onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9A8A7A] hover:text-[#C9A84C] transition-colors">
             {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
         </div>
-        {errors.password && <p className="text-[9px] text-red-400 mt-1">{errors.password.message}</p>}
       </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-gold w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Signing in...' : 'Sign In'}
+      <button type="submit" disabled={loading}
+        className="btn-dark w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        {loading ? <><Loader2 size={14} className="animate-spin" /> Signing in...</> : 'Sign In'}
       </button>
-
-      <div className="relative flex items-center gap-4 my-2">
-        <div className="flex-1 h-px bg-[rgba(201,168,76,0.1)]" />
-        <span className="text-[9px] tracking-[2px] uppercase text-[#3A3530]">or</span>
-        <div className="flex-1 h-px bg-[rgba(201,168,76,0.1)]" />
+      <div className="relative flex items-center gap-3 my-1">
+        <div className="flex-1 h-px bg-[rgba(42,36,32,0.1)]" />
+        <span className="text-[9px] tracking-[2px] uppercase text-[#9A8A7A]">or</span>
+        <div className="flex-1 h-px bg-[rgba(42,36,32,0.1)]" />
       </div>
-
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        className="btn-outline-gold w-full py-4 flex items-center justify-center gap-3"
-      >
+      <button type="button" onClick={handleGoogle}
+        className="w-full py-3.5 border border-[rgba(42,36,32,0.15)] text-[10px] tracking-[1px] flex items-center justify-center gap-3 hover:border-[#C9A84C] hover:text-[#C9A84C] transition-all">
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

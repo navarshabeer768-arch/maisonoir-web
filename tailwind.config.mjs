@@ -23,8 +23,9 @@ export default {
           800: '#5A451C',
           900: '#3A2C12',
         },
-        ivory: { DEFAULT: '#F5F0E8', dark: '#E8E0D0' },
-        obsidian: { DEFAULT: '#0A0A0A', light: '#141414' },
+        cream: { DEFAULT: '#FAF7F2', dark: '#F0EBE2' },
+        charcoal: { DEFAULT: '#2A2420', light: '#3D342C' },
+        obsidian: '#0A0A0A',
       },
       fontFamily: {
         display: ['var(--font-cormorant)', 'Georgia', 'serif'],
@@ -32,30 +33,12 @@ export default {
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
-        'shimmer': 'shimmer 2s infinite',
         'fade-in': 'fadeIn 0.6s ease forwards',
         'slide-up': 'slideUp 0.6s ease forwards',
       },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-16px)' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        fadeIn: {
-          from: { opacity: '0' },
-          to: { opacity: '1' },
-        },
-        slideUp: {
-          from: { opacity: '0', transform: 'translateY(24px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
-        },
-      },
       backgroundImage: {
         'gold-gradient': 'linear-gradient(135deg, #9A7A35 0%, #C9A84C 50%, #E8D5A3 100%)',
+        'cream-gradient': 'linear-gradient(135deg, #FAF7F2 0%, #F0EBE2 100%)',
       },
     },
   },
