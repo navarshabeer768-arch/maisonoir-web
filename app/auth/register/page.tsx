@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 
 export const metadata: Metadata = { title: 'Create Account', robots: { index: false } }
+export const dynamic = 'force-dynamic'
 
 export default function RegisterPage() {
   return (

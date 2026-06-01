@@ -7,12 +7,16 @@ const nextConfig = {
     ],
   },
   typescript: {
-    // Ignore type errors during production build — fixes Vercel deployment
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Already handled by .eslintrc.json
     ignoreDuringBuilds: true,
+  },
+  // Prevent static export issues with Supabase auth cookies
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', '*.vercel.app'],
+    },
   },
 }
 

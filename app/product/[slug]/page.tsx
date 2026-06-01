@@ -142,3 +142,4 @@ export default async function ProductPage({ params }: ProductPageProps) {
     </div>
   )
 }
+// force-dynamic already handled by generateMetadata

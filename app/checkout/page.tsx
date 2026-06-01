@@ -3,6 +3,8 @@ import { CheckoutForm } from '@/components/checkout/CheckoutForm'
 import { OrderSummary } from '@/components/checkout/OrderSummary'
 import { Footer } from '@/components/layout/Footer'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Secure Checkout',
   robots: { index: false },

@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { AccountLayout } from '@/components/account/AccountLayout'
 import { AccountDashboard } from '@/components/account/AccountDashboard'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = { title: 'My Account' }
 
 export default async function AccountPage() {

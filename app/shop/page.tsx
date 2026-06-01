@@ -5,6 +5,8 @@ import { ShopFilters } from '@/components/shop/ShopFilters'
 import { ShopSort } from '@/components/shop/ShopSort'
 import { Footer } from '@/components/layout/Footer'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Shop Luxury Fragrances',
   description: 'Browse our complete collection of luxury perfumes.',
