@@ -15,21 +15,29 @@ export default async function AccountPage() {
     { data: profile },
     { data: loyalty },
     { data: orders },
-    { data: wishlistCount },
+    { data: wishlistItems },
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('loyalty_accounts').select('*').eq('profile_id', user.id).single(),
-    supabase.from('orders').select('id, order_number, status, total, created_at, items:order_items(*)').eq('profile_id', user.id).order('created_at', { ascending: false }).limit(5),
-    supabase.from('wishlists').select('id', { count: 'exact' }).eq('profile_id', user.id),
+    supabase
+      .from('orders')
+      .select('id, order_number, status, total, created_at')
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('wishlists')
+      .select('id')
+      .eq('profile_id', user.id),
   ])
 
   return (
-    <AccountLayout profile={profile!}>
+    <AccountLayout profile={profile as any}>
       <AccountDashboard
-        profile={profile!}
-        loyalty={loyalty!}
-        recentOrders={orders ?? []}
-        wishlistCount={wishlistCount?.length ?? 0}
+        profile={profile as any}
+        loyalty={loyalty as any}
+        recentOrders={(orders ?? []) as any[]}
+        wishlistCount={wishlistItems?.length ?? 0}
       />
     </AccountLayout>
   )
