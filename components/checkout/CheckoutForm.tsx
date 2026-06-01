@@ -188,7 +188,7 @@ export function CheckoutForm() {
         disabled={loading}
         className="btn-gold w-full py-5 text-[10px] tracking-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Processing...' : `Place Order — $${(subtotal >= 150 ? subtotal : subtotal + 15).toFixed(0)}`}
+        {loading ? 'Processing...' : `Place Order — QAR \${(subtotal >= 550 ? subtotal : subtotal + 55).toFixed(0)}`}
       </button>
 
       <p className="text-center text-[9px] text-[#5A5048] tracking-[1px]">

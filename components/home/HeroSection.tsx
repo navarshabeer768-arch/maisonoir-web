@@ -47,7 +47,7 @@ export function HeroSection() {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }}
           className="flex gap-8 justify-center mt-16 flex-wrap">
-          {['500+ Luxury Brands', '100% Authentic', 'Free Shipping $150+', 'Easy Returns'].map(t => (
+          {['500+ Luxury Brands', '100% Authentic', 'Free Shipping QAR 550+', 'Easy Returns'].map(t => (
             <span key={t} className="text-[9px] tracking-[2px] uppercase text-[#9A8A7A] border-l border-[rgba(42,36,32,0.1)] pl-8 first:border-0 first:pl-0">
               {t}
             </span>

@@ -94,7 +94,7 @@ export function ProductInfo({ product }: { product: Product }) {
       {/* Trust badges */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { icon: Truck, label: 'Free Shipping', sub: 'Orders over $150' },
+          { icon: Truck, label: 'Free Shipping', sub: 'Orders over QAR 550' },
           { icon: ShieldCheck, label: '100% Authentic', sub: 'Verified guarantee' },
           { icon: RefreshCw, label: 'Free Returns', sub: '30-day policy' },
         ].map(({ icon: Icon, label, sub }) => (

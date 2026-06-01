@@ -9,7 +9,7 @@ interface CartDrawerProps { open: boolean; onClose: () => void }
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQuantity, subtotal, itemCount } = useCart()
-  const freeShipping = 150
+  const freeShipping = 550
   const remaining = freeShipping - subtotal
   const progress = Math.min((subtotal / freeShipping) * 100, 100)
   const shipping = subtotal >= freeShipping ? 0 : 15
@@ -103,7 +103,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <span className="text-[#6B5E4A]">Shipping</span>
-                    <span className={shipping === 0 ? 'text-emerald-600' : 'text-[#2A2420]'}>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+                    <span className={shipping === 0 ? 'text-emerald-600' : 'text-[#2A2420]'}>{shipping === 0 ? 'Free' : `QAR ${shipping}`}</span>
                   </div>
                   <div className="flex justify-between pt-2.5 border-t border-[rgba(42,36,32,0.08)]">
                     <span className="text-[9px] tracking-[2px] uppercase font-semibold text-[#2A2420]">Total</span>

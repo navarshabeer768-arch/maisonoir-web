@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const shippingAmount = subtotal >= 150 ? 0 : 15
+    const shippingAmount = subtotal >= 550 ? 0 : 55
     const taxAmount = (subtotal - discountAmount) * 0.05
     const total = subtotal - discountAmount + shippingAmount + taxAmount
 

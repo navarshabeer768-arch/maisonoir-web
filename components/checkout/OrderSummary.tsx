@@ -11,7 +11,7 @@ export function OrderSummary() {
   const [discount, setDiscount] = useState(0)
   const [couponLoading, setCouponLoading] = useState(false)
 
-  const shipping = subtotal >= 150 ? 0 : 15
+  const shipping = subtotal >= 550 ? 0 : 15
   const tax = (subtotal - discount) * 0.05
   const total = subtotal - discount + shipping + tax
 
@@ -23,7 +23,7 @@ export function OrderSummary() {
       const data = await res.json()
       if (data.valid) {
         setDiscount(data.discountAmount)
-        toast.success(`Coupon applied: -$${data.discountAmount.toFixed(0)}`)
+        toast.success(`Coupon applied: -QAR \${data.discountAmount.toFixed(0)}`)
       } else {
         toast.error(data.error ?? 'Invalid coupon')
       }
@@ -101,7 +101,7 @@ export function OrderSummary() {
           )}
           <div className="flex justify-between text-[11px]">
             <span className="text-[#5A5048]">Shipping</span>
-            <span className={shipping === 0 ? 'text-emerald-400' : ''}>{shipping === 0 ? 'Free' : `$${shipping}`}</span>
+            <span className={shipping === 0 ? 'text-emerald-400' : ''}>{shipping === 0 ? 'Free' : `QAR ${shipping}`}</span>
           </div>
           <div className="flex justify-between text-[11px]">
             <span className="text-[#5A5048]">VAT (5%)</span>
