@@ -1,24 +1,25 @@
 import Link from 'next/link'
-import { Footer } from '@/components/layout/Footer'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
-      <div className="h-[68px]" />
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center py-20">
-        <p className="section-eyebrow mb-4">404</p>
-        <h1 className="font-display text-6xl md:text-8xl font-light text-[#2A2420] mb-4">
-          Page Not <em className="gold-text">Found</em>
-        </h1>
-        <p className="text-[11px] tracking-[2px] uppercase text-[#9A8A7A] mb-10 max-w-sm leading-[2]">
-          The page you are looking for does not exist or has been moved
-        </p>
-        <div className="flex gap-4 flex-wrap justify-center">
-          <Link href="/shop" className="btn-dark px-8 py-3">Browse Collection</Link>
-          <Link href="/" className="btn-outline-gold px-8 py-3">Go Home</Link>
-        </div>
+    <div style={{ background: '#FAF7F2', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui', padding: '24px', textAlign: 'center' }}>
+      <div style={{ marginBottom: '16px', fontSize: '11px', letterSpacing: '5px', textTransform: 'uppercase', color: '#C9A84C', fontWeight: 600 }}>
+        404
       </div>
-      <Footer minimal />
+      <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(48px, 8vw, 80px)', fontWeight: 300, color: '#2A2420', lineHeight: 1, marginBottom: '16px' }}>
+        Page Not Found
+      </h1>
+      <p style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: '#9A8A7A', marginBottom: '40px', maxWidth: '360px', lineHeight: 2 }}>
+        The page you are looking for does not exist or has been moved
+      </p>
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Link href="/shop" style={{ padding: '14px 32px', background: '#2A2420', color: 'white', textDecoration: 'none', fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>
+          Browse Collection
+        </Link>
+        <Link href="/" style={{ padding: '14px 32px', border: '1px solid #C9A84C', color: '#C9A84C', textDecoration: 'none', fontSize: '9px', letterSpacing: '3px', textTransform: 'uppercase' }}>
+          Go Home
+        </Link>
+      </div>
     </div>
   )
 }
