@@ -1,49 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@/lib/supabase/server'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ recommendation: 'AI consultant is not configured yet. Please add your ANTHROPIC_API_KEY to Vercel environment variables.' })
+    }
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return NextResponse.json({ recommendation: 'Our AI consultant is temporarily unavailable. Please browse our collection directly.' })
+    }
+
     const { query, preferences } = await req.json()
+    if (!query?.trim()) {
+      return NextResponse.json({ error: 'Query is required' }, { status: 400 })
+    }
+
+    const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
 
-    // Fetch available products as context
     const { data: products } = await supabase
       .from('products')
-      .select(`
-        name, description, fragrance_family, concentration, gender_target,
+      .select(`name, description, fragrance_family, concentration, gender_target,
         brand:brands(name),
-        variants:product_variants(price, size_ml),
-        notes:product_notes(note_type, note:fragrance_notes(name))
-      `)
+        variants:product_variants(price, size_ml)`)
       .eq('status', 'active')
       .order('total_sold', { ascending: false })
       .limit(50)
 
     const productContext = products?.map(p => {
-      const notes = (p.notes as any[])?.map((n: any) => `${n.note_type}: ${n.note.name}`).join(', ')
       const price = (p.variants as any[])?.[0]?.price
-      return `${(p.brand as any)?.name} ${p.name} — ${p.fragrance_family}, ${p.concentration?.toUpperCase()}, ${p.gender_target}, from $${price} — Notes: ${notes}`
-    }).join('\n')
+      return `${(p.brand as any)?.name} ${p.name} — ${p.fragrance_family}, ${p.concentration?.toUpperCase()}, ${p.gender_target}, from QAR ${price}`
+    }).join('\n') ?? ''
 
-    const systemPrompt = `You are an expert luxury fragrance consultant at Maison Noir, a premium perfume boutique. You have deep knowledge of perfumery, fragrance families, notes, and brands.
+    const Anthropic = (await import('@anthropic-ai/sdk')).default
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-Available products in our current inventory:
-${productContext}
-
-Guidelines:
-- Recommend only products from our inventory above
-- Provide specific, expert recommendations with reasoning
-- Mention fragrance notes, occasions, seasons
-- Use elegant, luxury-appropriate language
-- Limit to 3-5 recommendations per query
-- Format: **Product Name** by Brand — Brief reasoning
-- End with a personalized closing note`
+    const systemPrompt = `You are an expert luxury fragrance consultant at Maison Noir, a premium perfume boutique in Qatar.
+Prices are in QAR (Qatar Riyal). Recommend only products from our inventory below.
+Available products:\n${productContext}
+Guidelines: Recommend 3-5 products, mention notes and occasions, use elegant language, format as **Product Name** by Brand — reasoning.`
 
     const userMessage = preferences
-      ? `Customer preferences: Gender: ${preferences.gender}, Budget: $${preferences.budget}, Season: ${preferences.season}, Mood: ${preferences.mood}\n\nQuery: ${query}`
+      ? `Preferences: Gender: ${preferences.gender}, Budget: QAR ${preferences.budget}, Season: ${preferences.season}, Mood: ${preferences.mood}\n\nQuery: ${query}`
       : query
 
     const response = await anthropic.messages.create({
@@ -54,11 +51,10 @@ Guidelines:
     })
 
     const recommendation = response.content[0].type === 'text' ? response.content[0].text : ''
-
     return NextResponse.json({ recommendation })
 
-  } catch (error) {
-    console.error('AI consultant error:', error)
-    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
+  } catch (error: any) {
+    console.error('AI route error:', error)
+    return NextResponse.json({ recommendation: 'Unable to get recommendations at this time. Please browse our collection.' })
   }
 }
