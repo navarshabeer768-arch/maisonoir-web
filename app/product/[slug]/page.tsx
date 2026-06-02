@@ -15,22 +15,32 @@ interface Props { params: Promise<{ slug: string }> }
 async function getProduct(slug: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase env vars')
       return null
     }
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('products')
-      .select(`*, brand:brands(*), category:categories(id,name,slug),
+      .select(`
+        *,
+        brand:brands(*),
+        category:categories(id,name,slug),
         images:product_images(*, display_order),
         variants:product_variants(*),
-        notes:product_notes(note_type, intensity, note:fragrance_notes(id,name,name_ar,family))`)
+        notes:product_notes(note_type, intensity, note:fragrance_notes(id,name,name_ar,family))
+      `)
       .eq('slug', slug)
       .neq('status', 'archived')
       .maybeSingle()
+
+    if (error) {
+      console.error('Product fetch error:', error.message)
+      return null
+    }
     return data
-  } catch (e) {
-    console.error('Product fetch error:', e)
+  } catch (e: any) {
+    console.error('Product page exception:', e.message)
     return null
   }
 }
@@ -41,14 +51,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return { title: 'Product Not Found | Maison Noir' }
   return {
     title: `${product.name} — ${(product.brand as any)?.name ?? 'Maison Noir'}`,
-    description: product.description?.slice(0, 160),
+    description: (product as any).description?.slice(0, 160),
   }
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
   const product = await getProduct(slug)
-
   if (!product) notFound()
 
   let reviews: any[] = []
@@ -58,12 +67,13 @@ export default async function ProductPage({ params }: Props) {
       const { createClient } = await import('@/lib/supabase/server')
       const supabase = await createClient()
       const [r, rel] = await Promise.all([
-        supabase.from('reviews').select('*, profile:profiles(first_name,last_name,avatar_url)')
+        supabase.from('reviews')
+          .select('*, profile:profiles(first_name,last_name,avatar_url)')
           .eq('product_id', product.id).eq('is_approved', true)
           .order('created_at', { ascending: false }).limit(10),
         supabase.from('products')
           .select('*, brand:brands(name), images:product_images(url,is_primary), variants:product_variants(price,size_ml,is_active)')
-          .eq('fragrance_family', product.fragrance_family ?? 'woody')
+          .eq('fragrance_family', (product as any).fragrance_family ?? 'woody')
           .neq('id', product.id).neq('status', 'archived').limit(4),
       ])
       reviews = r.data ?? []
@@ -71,10 +81,11 @@ export default async function ProductPage({ params }: Props) {
     }
   } catch {}
 
-  const sortedImages = [...((product.images as any[]) ?? [])].sort((a: any, b: any) => a.display_order - b.display_order)
-  const topNotes = (product.notes as any[])?.filter((n: any) => n.note_type === 'top') ?? []
-  const heartNotes = (product.notes as any[])?.filter((n: any) => n.note_type === 'heart') ?? []
-  const baseNotes = (product.notes as any[])?.filter((n: any) => n.note_type === 'base') ?? []
+  const sortedImages = [...((product as any).images ?? [])].sort((a: any, b: any) => a.display_order - b.display_order)
+  const notes = (product as any).notes ?? []
+  const topNotes = notes.filter((n: any) => n.note_type === 'top')
+  const heartNotes = notes.filter((n: any) => n.note_type === 'heart')
+  const baseNotes = notes.filter((n: any) => n.note_type === 'base')
 
   return (
     <div className="bg-[#FAF7F2] min-h-screen">
@@ -86,7 +97,9 @@ export default async function ProductPage({ params }: Props) {
           <a href="/shop" className="hover:text-[#C9A84C] transition-colors">Shop</a>
           {(product as any).category && (
             <><span>/</span>
-            <a href={`/shop?category=${(product as any).category.slug}`} className="hover:text-[#C9A84C] transition-colors">{(product as any).category.name}</a></>
+            <a href={`/shop?category=${(product as any).category.slug}`} className="hover:text-[#C9A84C] transition-colors">
+              {(product as any).category.name}
+            </a></>
           )}
           <span>/</span>
           <span className="text-[#2A2420]">{product.name}</span>
@@ -110,7 +123,8 @@ export default async function ProductPage({ params }: Props) {
       </div>
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-16 border-t border-[rgba(42,36,32,0.06)]">
         <ReviewsSection reviews={reviews as any} productId={product.id}
-          averageRating={product.average_rating ?? 0} reviewCount={product.review_count ?? 0} />
+          averageRating={(product as any).average_rating ?? 0}
+          reviewCount={(product as any).review_count ?? 0} />
       </div>
       {related.length > 0 && (
         <div className="border-t border-[rgba(42,36,32,0.06)]">
