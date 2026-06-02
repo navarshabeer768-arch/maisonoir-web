@@ -1,11 +1,4 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import { ProductImages } from '@/components/product/ProductImages'
-import { ProductInfo } from '@/components/product/ProductInfo'
-import { FragrancePyramid } from '@/components/product/FragrancePyramid'
-import { PerformanceIndicators } from '@/components/product/PerformanceIndicators'
-import { ReviewsSection } from '@/components/product/ReviewsSection'
-import { RelatedProducts } from '@/components/product/RelatedProducts'
 import { Footer } from '@/components/layout/Footer'
 
 export const dynamic = 'force-dynamic'
@@ -15,40 +8,32 @@ interface Props { params: Promise<{ slug: string }> }
 async function getProduct(slug: string) {
   try {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      console.error('Missing Supabase env vars')
-      return null
+      return { error: 'env_missing', product: null }
     }
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('products')
-      .select(`
-        *,
-        brand:brands(*),
-        category:categories(id,name,slug),
+      .select(`*, brand:brands(*), category:categories(id,name,slug),
         images:product_images(*, display_order),
         variants:product_variants(*),
-        notes:product_notes(note_type, intensity, note:fragrance_notes(id,name,name_ar,family))
-      `)
+        notes:product_notes(note_type, intensity, note:fragrance_notes(id,name,name_ar,family))`)
       .eq('slug', slug)
       .neq('status', 'archived')
       .maybeSingle()
 
-    if (error) {
-      console.error('Product fetch error:', error.message)
-      return null
-    }
-    return data
+    if (error) return { error: error.message, product: null }
+    if (!data) return { error: 'not_found', product: null }
+    return { error: null, product: data }
   } catch (e: any) {
-    console.error('Product page exception:', e.message)
-    return null
+    return { error: e.message, product: null }
   }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const product = await getProduct(slug)
-  if (!product) return { title: 'Product Not Found | Maison Noir' }
+  const { product } = await getProduct(slug)
+  if (!product) return { title: 'Maison Noir — Luxury Perfumes' }
   return {
     title: `${product.name} — ${(product.brand as any)?.name ?? 'Maison Noir'}`,
     description: (product as any).description?.slice(0, 160),
@@ -57,8 +42,58 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
-  const product = await getProduct(slug)
-  if (!product) notFound()
+  const { product, error } = await getProduct(slug)
+
+  // DB unreachable - show beautiful holding page instead of 404
+  if (!product && error !== 'not_found') {
+    return (
+      <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+        <div className="h-[68px]" />
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 mx-auto mb-6 bg-[rgba(201,168,76,0.1)] border border-[rgba(201,168,76,0.2)] rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-[#C9A84C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <p className="section-eyebrow mb-3">Maison Noir</p>
+            <h1 className="font-display text-4xl font-light text-[#2A2420] mb-4">Loading Fragrance</h1>
+            <p className="text-[11px] tracking-[1px] text-[#9A8A7A] mb-8 leading-relaxed">
+              Our database is being configured. Please try again in a moment.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <a href={`/product/${slug}`} className="btn-dark px-6 py-3 text-[9px]">Refresh</a>
+              <a href="/shop" className="btn-outline-gold px-6 py-3 text-[9px]">Browse Shop</a>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  // True 404 - product doesn't exist
+  if (!product) {
+    const { notFound } = await import('next/navigation')
+    notFound()
+  }
+
+  // Lazy load heavy components
+  const [
+    { ProductImages },
+    { ProductInfo },
+    { FragrancePyramid },
+    { PerformanceIndicators },
+    { ReviewsSection },
+    { RelatedProducts },
+  ] = await Promise.all([
+    import('@/components/product/ProductImages'),
+    import('@/components/product/ProductInfo'),
+    import('@/components/product/FragrancePyramid'),
+    import('@/components/product/PerformanceIndicators'),
+    import('@/components/product/ReviewsSection'),
+    import('@/components/product/RelatedProducts'),
+  ])
 
   let reviews: any[] = []
   let related: any[] = []
@@ -67,8 +102,7 @@ export default async function ProductPage({ params }: Props) {
       const { createClient } = await import('@/lib/supabase/server')
       const supabase = await createClient()
       const [r, rel] = await Promise.all([
-        supabase.from('reviews')
-          .select('*, profile:profiles(first_name,last_name,avatar_url)')
+        supabase.from('reviews').select('*, profile:profiles(first_name,last_name,avatar_url)')
           .eq('product_id', product.id).eq('is_approved', true)
           .order('created_at', { ascending: false }).limit(10),
         supabase.from('products')
