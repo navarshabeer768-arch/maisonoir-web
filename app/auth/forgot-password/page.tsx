@@ -1,26 +1,30 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'react-hot-toast'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
       if (error) { toast.error(error.message); return }
       setSent(true)
       toast.success('Reset email sent!')
-    } finally { setLoading(false) }
+    } catch (err: any) {
+      toast.error(err.message || 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -45,7 +49,7 @@ export default function ForgotPasswordPage() {
                   placeholder="your@email.com" />
               </div>
               <button type="submit" disabled={loading}
-                className="btn-dark w-full py-3.5 disabled:opacity-50">
+                className="w-full py-3.5 bg-[#2A2420] text-white text-[10px] tracking-[2px] uppercase font-semibold hover:bg-[#C9A84C] transition-colors disabled:opacity-50">
                 {loading ? 'Sending…' : 'Send Reset Link'}
               </button>
             </form>
