@@ -1,20 +1,39 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { AccountLayout } from '@/components/account/AccountLayout'
 export const dynamic = 'force-dynamic'
+
 export default async function Page() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login?redirect=/account/loyalty')
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-  return (
-    <AccountLayout profile={profile as any}>
-      <div>
-        <h1 className="font-display text-4xl font-light mb-8 capitalize">loyalty</h1>
-        <div className="bg-[#F8F5F0] border border-[rgba(201,168,76,0.2)] p-10 text-center rounded">
-          <p className="text-[#6B5E4A] text-sm">Coming soon — your loyalty will appear here.</p>
+  try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return (
+        <AccountLayout profile={{ email: '', first_name: 'Guest', last_name: '', role: 'customer' }}>
+          <div>
+            <h1 className="font-display text-4xl font-light text-[#2A2420] mb-8 capitalize">Loyalty</h1>
+            <div className="bg-white border border-[rgba(42,36,32,0.07)] p-10 text-center shadow-sm">
+              <p className="text-[#9A8A7A] text-sm">Database not connected yet.</p>
+            </div>
+          </div>
+        </AccountLayout>
+      )
+    }
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/auth/login?redirect=/account/loyalty')
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
+    const safeProfile = profile ?? { id: user.id, email: user.email ?? '', first_name: user.user_metadata?.first_name ?? 'Guest', last_name: user.user_metadata?.last_name ?? '', role: 'customer', is_active: true }
+    return (
+      <AccountLayout profile={safeProfile as any}>
+        <div>
+          <h1 className="font-display text-4xl font-light text-[#2A2420] mb-8 capitalize">Loyalty</h1>
+          <div className="bg-white border border-[rgba(42,36,32,0.07)] p-10 text-center shadow-sm">
+            <p className="text-[#9A8A7A] text-sm">Your Loyalty will appear here.</p>
+          </div>
         </div>
-      </div>
-    </AccountLayout>
-  )
+      </AccountLayout>
+    )
+  } catch (e: any) {
+    console.error('Loyalty page error:', e)
+    redirect('/auth/login')
+  }
 }

@@ -2,7 +2,13 @@
 import { createContext, useContext } from 'react'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { CartItem, Product, ProductVariant } from '@/types'
+import type { Product, ProductVariant } from '@/types'
+
+export interface CartItem {
+  product: Product
+  variant: ProductVariant
+  quantity: number
+}
 
 interface CartStore {
   items: CartItem[]
@@ -10,8 +16,8 @@ interface CartStore {
   removeItem: (variantId: string) => void
   updateQuantity: (variantId: string, quantity: number) => void
   clearCart: () => void
-  itemCount: number
-  subtotal: number
+  get itemCount(): number
+  get subtotal(): number
 }
 
 export const useCartStore = create<CartStore>()(
@@ -54,7 +60,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       get subtotal() {
-        return get().items.reduce((sum, i) => sum + i.variant.price * i.quantity, 0)
+        return get().items.reduce((sum, i) => {
+          // Ensure price is always a number (handles Zustand rehydration string issue)
+          const price = typeof i.variant.price === 'string'
+            ? parseFloat(i.variant.price as string)
+            : i.variant.price
+          return sum + (price * i.quantity)
+        }, 0)
       },
     }),
     { name: 'maisonoir-cart' }
